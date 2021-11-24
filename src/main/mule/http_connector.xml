@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="http_connectorFlow" doc:id="cfcdf0f9-e3c2-4615-ba11-3bbe6045d5f2" >
+		<http:listener doc:name="Http basic" doc:id="74a8634b-cfae-4419-8990-361ab02168b2" config-ref="HTTP_Listener_config" path="/basics/*" allowedMethods="GET">
+			<http:response >
+				<http:body ><![CDATA[#[vars.requestResponse]]]></http:body>
+			</http:response>
+		</http:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="46a7ef38-6167-4d6b-b548-b674c25baedb" message='#["Hello" ++ flow.name]'/>
+		<set-payload value='#["basic flow"]' doc:name="Set Payload" doc:id="399597a6-20ed-4553-ac48-52e0fb89dc67" />
+		<set-variable value="#[{&#10;	'name': 'raman'&#10;}]" doc:name="Set Variable" doc:id="25deb5df-a3b5-4c92-9e92-a068e9c00830" variableName="customMap"/>
+		<http:request method="GET" doc:name="Request" doc:id="e9b53e7f-1c0d-4e0e-9aa1-d47b41188197" path="/query" config-ref="HTTP_Request_configuration" target="requestResponse">
+			<http:query-params ><![CDATA[#[output application/java
+---
+
+{
+	
+	('name' : vars.customMap.name) 
+	if(vars.customMap.name != null and vars.customMap.name != '')
+	
+}]]]></http:query-params>
+		</http:request>
+	</flow>
+	<flow name="http_connectorFlow1" doc:id="321f2b06-a98a-45cb-a5d8-84432bce1266" >
+		<http:listener doc:name="Listener" doc:id="3f211669-454b-4b69-a900-11b551a6da5d" config-ref="HTTP_Listener_config" path="/uri/{ID}" allowedMethods="GET"/>
+		<logger level="INFO" doc:name="Logger" doc:id="b5068691-2002-40ef-8337-2f2c659f9506" message='#["URI" ++ flow.name]'/>
+		<set-payload value="#[attributes.uriParams.ID]" doc:name="Set Payload" doc:id="0f24834d-a80e-4dc8-8770-80288d824aa4" />
+	</flow>
+	<flow name="http_connectorFlow2" doc:id="0eab4104-7ec5-4a16-9f78-eeea75cf029b" >
+		<http:listener doc:name="Listener" doc:id="c72bf296-539c-40bb-acb1-ee1594e94ae2" config-ref="HTTP_Listener_config" path="/query"/>
+		<set-payload value="#[%dw 2.0&#10;&#10;output application/json&#10;&#10;---&#10;&#10;&#10;&#10;&#10;attributes.queryParams]" doc:name="Set Payload" doc:id="20750aa5-e7c2-48af-afc0-710df7b0d72f" />
+	</flow>
+</mule>
